@@ -1,0 +1,1 @@
+This repository contains a python script which performs monte carlo simulations of a 2-dimensional ising model. The lattice energy, spin pair correlation, and the efficiency of the monte carlo moves are tracked as the simulation progresses.
