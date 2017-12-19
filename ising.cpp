@@ -1,12 +1,22 @@
 /*
-  This program will simulate a two-dimensional ising-model.
+  This program will simulate a two-dimensional potts-model.
  */
 
 #include "ising.hpp"
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <math.h>
+#include "string"
 using namespace std;
+
+
+void readFile(string fileName) {
+  ifstream myReadFile;
+  myReadFile.open(fileName);
+}
+
+
 
 void MonteCarloSim(Lattice myLattice,int nCycles) {
   int nSpins = pow(myLattice.getSideLength(),2);
@@ -21,6 +31,9 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   float deltaE = 0.0;
   float deltaS = 0.0;
 
+  std::cout << "Energy of lattice at the beginning = " << oldEnergy << endl;
+  myLattice.printLattice();
+  
   //Loop over the designated number of MCSweeps
   for (int iCycle = 0; iCycle < nCycles; iCycle++) {
     
@@ -73,11 +86,21 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
     } // jdex loop
 
   }// iCycle loop
-  
+  std::cout << "Printing out lattice after all MC steps are completed" << endl;
+  myLattice.printLattice();
+
+  std::cout << "Energy at end = " << oldEnergy << endl;
 }
 
 
 int main() {
+
+  // string fileName;
+  // std::cout << "Please enter a file name to be read in." << endl;
+  // std::cin >> fileName;
+  // readFile(fileName);
+
+  
   Lattice myLattice;
   myLattice.initializeLattice();
 
@@ -86,9 +109,6 @@ int main() {
   std::cin >> nCycles;
   
   MonteCarloSim(myLattice, nCycles);
-
-  std::cout << "Printing out lattice after all MC steps are completed" << endl;
-  myLattice.printLattice();
   
   return 0;
 }

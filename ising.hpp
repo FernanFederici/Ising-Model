@@ -148,6 +148,9 @@ float Lattice::calcTotalEnergy(void) {
   int idex = 0;
   int jdex = 0;
   /*
+
+    H = -J * Sum( kron[si,sj] )
+
     There are four pairs of energies that need to be computed for each i,j pair.
     for a given i,j, there are 
     (i,j) <-> (i-1,j)     (i,j) <-> (i,j-1)
@@ -161,43 +164,51 @@ float Lattice::calcTotalEnergy(void) {
       // (i,j) <-> (i-1,j)
       if ( i-1 < 0) {
 	idex = i - 1 + sideLength;
-	energySum = energySum - (matrix[i][j] * matrix[idex][j]);
+	if (matrix[i][j] == matrix[idex][j]) 
+	  energySum = energySum - 1.0;
       }
       else if ( i-1 >= 0) {
-	  idex = i - 1;
-	  energySum = energySum - (matrix[i][j] * matrix[idex][j]);
-	}
-
+	idex = i - 1;
+	if (matrix[i][j] == matrix[idex][j]) 
+	  energySum = energySum - 1.0;
+      }
+      
       // (i,j) <-> (i+1,j)
       if ( i+1 == sideLength) {
 	idex = i + 1 - sideLength;
-	energySum = energySum - (matrix[i][j] * matrix[idex][j]);
+	if (matrix[i][j] == matrix[idex][j]) 
+	  energySum = energySum - 1.0;
       }
       else if (i+1 < sideLength) {
-	  idex = i + 1;
-	  energySum = energySum - (matrix[i][j] * matrix[i][j]);
-	}
-
+	idex = i + 1;
+	if (matrix[i][j] == matrix[i][j]) 
+	  energySum = energySum - 1.0;
+      }
+      
       // (i,j) <-> (i,j-1)
       if (j-1 < 0) {
 	jdex = j - 1 + sideLength;
-	energySum = energySum - (matrix[i][j] * matrix[i][jdex]);
+	if (matrix[i][j] == matrix[i][jdex])
+	  energySum = energySum - 1.0;
       }
       else if (j-1 >= 0) {
-	  jdex = j - 1;
-	  energySum = energySum - (matrix[i][j] * matrix[i][jdex]);
-	}
-
+	jdex = j - 1;
+	if (matrix[i][j] == matrix[i][jdex])
+	  energySum = energySum - 1.0;
+      }
+      
       // (i,j) <-> (i,j+1)
       if (j+1 == sideLength) {
 	jdex = j + 1 - sideLength;
-	energySum = energySum - (matrix[i][j] * matrix[i][jdex]);
+	if (matrix[i][j] == matrix[i][jdex])
+	  energySum = energySum - 1.0;
       }
       else if (j+1 < sideLength){
 	jdex = j;
-	energySum = energySum - (matrix[i][j] * matrix[i][jdex]);
+	if (matrix[i][j] == matrix[i][jdex]) 
+	  energySum = energySum - 1.0;
       }
-	
+      
     }
   }
   energySum = energySum * (coupling / 2.0);
@@ -220,8 +231,41 @@ int Lattice::getRandomCoord(void) {
 }
 
 void Lattice::flipSpin(int idex, int jdex) {
-  matrix[idex][jdex] = -1.0 * matrix[idex][jdex];
-  std::cout << matrix[idex][jdex] << endl;
+  double val = (double)rand()/(double)RAND_MAX;
+  
+  if (matrix[idex][jdex] == 1.0) {
+    if (val < 0.5) {
+      matrix[idex][jdex] = 2.0;
+      return;
+    }
+    else {
+      matrix[idex][jdex] = 3.0;
+      return;
+    }
+  }
+    
+  if (matrix[idex][jdex] == 2.0) {
+    if (val < 0.5) {
+      matrix[idex][jdex] = 3.0;
+      return;
+    }
+    else {
+      matrix[idex][jdex] = 1.0;
+      return;
+    }
+  }
+
+  if (matrix[idex][jdex] == 3.0) {
+    if (val < 0.5) {
+      matrix[idex][jdex] = 1.0;
+      return;
+    }
+    else {
+      matrix[idex][jdex] = 2.0;
+      return;
+    }
+  }
+  
 }
 
 
@@ -230,39 +274,59 @@ float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
   int i = 0;
   int j = 0;
   /*
-    This time we will have to be more careful with neighboring interactions.
+    Here we will only consider neighbors of the flipped spin for the i,j pairs
+
+    H = -J * Sum( kron[si,sj] )
+
+    There are four pairs of energies that need to be computed for each i,j pair.
+    for a given i,j, there are 
+    (i,j) <-> (i-1,j)     (i,j) <-> (i,j-1)
+    (i,j) <-> (i+1,j)     (i,j) <-> (i,j+1)
+
   */
 
+   // (i,j) <-> (i-1,j)
   if ( idex-1 < 0){
     i = idex - 1 + sideLength;
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[i][jdex]);
+    if (matrix[idex][jdex] == matrix[i][jdex])
+      randSpinE = randSpinE - 1.0;
   }
   else if (idex-1 >= 0) {
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex-1][jdex]);
+    if (matrix[idex][jdex] == matrix[idex-1][jdex])
+      randSpinE = randSpinE - 1.0;
   }
 
+  // (i,j) <-> (i+1,j)
   if (idex+1 == sideLength) {
     i = idex + 1 - sideLength;
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[i][jdex]);
+    if (matrix[idex][jdex] == matrix[i][jdex])
+      randSpinE = randSpinE - 1.0;
   }
   else if (idex+1 < sideLength) {
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex+1][jdex]);
+    if (matrix[idex][jdex] == matrix[idex+1][jdex])
+      randSpinE = randSpinE - 1.0;
   }
 
-   if ( jdex-1 < 0){
+  // (i,j) <-> (i,j-1)
+  if ( jdex-1 < 0){
     j = jdex - 1 + sideLength;
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex][j]);
+    if (matrix[idex][jdex] == matrix[idex][j])
+      randSpinE = randSpinE - 1.0;
   }
   else if (jdex-1 >= 0) {
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex][jdex-1]);
+    if (matrix[idex][jdex] == matrix[idex][jdex-1])
+      randSpinE = randSpinE - 1.0;
   }
 
+  // (i,j) <-> (i,j+1)
   if (jdex+1 == sideLength) {
     j = jdex + 1 - sideLength;
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex][j]);
+    if (matrix[idex][jdex] == matrix[idex][j])
+      randSpinE = randSpinE - 1.0;
   }
   else if (jdex+1 < sideLength) {
-    randSpinE = randSpinE - (matrix[idex][jdex] * matrix[idex][jdex+1]);
+    if (matrix[idex][jdex] == matrix[idex][jdex+1])
+      randSpinE = randSpinE - 1.0;
   }
 
   randSpinE = randSpinE * 2.0 * coupling;
