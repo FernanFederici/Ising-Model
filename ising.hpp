@@ -37,7 +37,8 @@ public:
   float calcTotalEnergy(void);
   void calcMagnetization(float magnetization[3]);
   int getRandomCoord(void);
-  void flipSpin(int idex, int jdex);
+  float flipSpin(int idex, int jdex);
+  void revertSpin(int idex, int jdex, float savedState);
   float calcDifferenceInEnergy(int idex, int jdex);
   float calcDifferenceInMagnetization(int idex, int jdex);
   
@@ -248,44 +249,48 @@ int Lattice::getRandomCoord(void) {
   return (val*sideLength);
 }
 
-void Lattice::flipSpin(int idex, int jdex) {
+float Lattice::flipSpin(int idex, int jdex) {
   double val = (double)rand()/(double)RAND_MAX;
+  float savedState = matrix[idex][jdex];
   
   if (matrix[idex][jdex] == 1.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 2.0;
-      return;
+      return savedState;
     }
     else {
       matrix[idex][jdex] = 3.0;
-      return;
+      return savedState;
     }
   }
     
   if (matrix[idex][jdex] == 2.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 3.0;
-      return;
+      return savedState;
     }
     else {
       matrix[idex][jdex] = 1.0;
-      return;
+      return savedState;
     }
   }
 
   if (matrix[idex][jdex] == 3.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 1.0;
-      return;
+      return savedState;
     }
     else {
       matrix[idex][jdex] = 2.0;
-      return;
+      return savedState;
     }
   }
-  
+  return savedState;
 }
 
+void Lattice::revertSpin(int idex, int jdex, float savedState) {
+  matrix[idex][jdex] = savedState;
+}
 
 float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
   float randSpinE = 0.0;
@@ -348,6 +353,7 @@ float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
   }
 
   randSpinE = randSpinE * 2.0 * coupling;
+  std::cout << "randSpinE = " << randSpinE << endl;
   return randSpinE;
 }
 

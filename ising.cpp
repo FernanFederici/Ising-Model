@@ -34,6 +34,7 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   float newMagnetization = 0.0;
   float preFlipEnergy = 0.0;
   float postFlipEnergy = 0.0;
+  float savedState = 0.0;
 
   float deltaE = 0.0;
   float deltaS = 0.0;
@@ -50,7 +51,6 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   //Loop over the designated number of MCSweeps
   for (int iCycle = 0; iCycle < nCycles; iCycle++) {
     
-    //myLattice.accumulateStats(oldEnergy,oldMagnetization);
     
     //For each sweep, loop through entire lattice
     for (int idex = 0; idex < myLattice.getSideLength(); idex++){
@@ -64,14 +64,19 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	*/
 	
 	preFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
-	myLattice.flipSpin(idex,jdex);
+	savedState = myLattice.flipSpin(idex,jdex);
 	postFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
 
 	deltaE = postFlipEnergy - preFlipEnergy;
-	//deltaS = myLattice.calcDifferenceInMagnetization(idex,jdex);
-	
+	std::cout << "deltaE = " << deltaE << endl;
 	newEnergy = oldEnergy + deltaE;
-	//newMagnetization = oldMagnetization + deltaS;
+	//std::cout << "newEnergy = " << newEnergy << endl;
+
+	//Testing
+	//newEnergy = myLattice.calcTotalEnergy();
+	std::cout << "newEnergy = " << newEnergy << endl; 
+
+	
 	  
 	if (newEnergy > oldEnergy){
 	  double randNum = (double)rand()/(double)RAND_MAX;
@@ -79,19 +84,20 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	  if (randNum <= exp(-1.0/myLattice.getTemperature())*(newEnergy - oldEnergy)) {
 	    acceptedMoves = acceptedMoves + 1;
 	    oldEnergy = newEnergy;
-	    //oldMagnetization = newMagnetization;
+
 	  }
 	  // new energy is too large when compared to a thermal distribution
 	  // flip spin again to go back to old configuration.
 	  else {
-	    myLattice.flipSpin(idex,jdex);
+	    myLattice.revertSpin(idex,jdex, savedState);
 	  }
 	}
+	
 	// if the new energy configuration is lower than old, keep the move
 	else {
 	  acceptedMoves = acceptedMoves + 1;
 	  oldEnergy = newEnergy;
-	  //oldMagnetization = newMagnetization;
+
 	}
 
 
@@ -108,10 +114,18 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 
     outputFile << std::to_string(iCycle) + "\t" + std::to_string(oldEnergy) + "\n";
   }// iCycle loop
+  myLattice.calcMagnetization(oldMagnetization);
+  std::cout << "Magnetization of lattice at the beginning = "
+	    << oldMagnetization[0] << "," << oldMagnetization[1] << ","
+	    << oldMagnetization[2] << endl;
+  
   std::cout << "Printing out lattice after all MC steps are completed" << endl;
   myLattice.printLattice();
 
   std::cout << "Energy at end = " << oldEnergy << endl;
+
+  std::cout << "attemptedMoves = " << attemptedMoves << endl;
+  std::cout << "acceptedMoves = " << acceptedMoves << endl;
 }
 
 
