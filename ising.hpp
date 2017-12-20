@@ -35,7 +35,7 @@ public:
   void initializeLattice(void);
   void printLattice(void);
   float calcTotalEnergy(void);
-  float calcMagnetization(void);
+  void calcMagnetization(float magnetization[3]);
   int getRandomCoord(void);
   void flipSpin(int idex, int jdex);
   float calcDifferenceInEnergy(int idex, int jdex);
@@ -215,14 +215,32 @@ float Lattice::calcTotalEnergy(void) {
   return energySum;
 }
 
-float Lattice::calcMagnetization(void) {
-  float magnetization = 0.0;
+void Lattice::calcMagnetization(float magnetization[3]) {
+  float netA = 0.0;
+  float netB = 0.0;
+  float netC = 0.0;
+  
   for (int i = 0; i < sideLength; i++) {
     for (int j = 0; j < sideLength; j++) {
-      magnetization = magnetization + matrix[i][j];
+      
+      if (matrix[i][j] == 1.0)
+	netA = netA + 1.0;
+      else if (matrix[i][j] == 2.0)
+	netB = netB + 1.0;
+      else if (matrix[i][j] == 3.0)
+	netC = netC + 1.0;
+      
     }
   }
-  return (magnetization / pow(sideLength, 2.0));
+  
+  netA = netA / pow(sideLength, 2.0);
+  netB = netB / pow(sideLength, 2.0);
+  netC = netC / pow(sideLength, 2.0);
+
+  magnetization[0] = netA;
+  magnetization[1] = netB;
+  magnetization[2] = netC;
+
 }
 
 int Lattice::getRandomCoord(void) {
