@@ -99,7 +99,7 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
     outputFile << std::to_string(iCycle+1) + "\t" + std::to_string(oldEnergy) + "\n";
   }// iCycle loop
   myLattice.calcMagnetization(oldMagnetization);
-  std::cout << "Magnetization of lattice at the beginning = "
+  std::cout << "Magnetization of lattice at the end = "
 	    << oldMagnetization[0] << "," << oldMagnetization[1] << ","
 	    << oldMagnetization[2] << endl;
   

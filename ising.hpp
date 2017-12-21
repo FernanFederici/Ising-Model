@@ -12,6 +12,7 @@ public:
   int numSpins;
   float spinMoment;
   float externField;
+  float externFieldDirect;
   
   vector< vector<float> > matrix;
   vector<float> aveSpin;
@@ -30,6 +31,9 @@ public:
 
   int getExternField(void);
   void setExternField(float newField);
+
+  int getExternFieldDirect(void);
+  void setExternFieldDirect(float newFieldDirect);
   
   // Utility functions of the lattice.
   void initializeLattice(void);
@@ -46,8 +50,6 @@ public:
 
   
 };
-
-
 
 
 // Member function definitions
@@ -91,6 +93,14 @@ void Lattice::setExternField(float newField){
   externField = newField;
 }
 
+int Lattice::getExternFieldDirect(void){
+  return externFieldDirect;
+}
+
+void Lattice::setExternFieldDirect(float newFieldDirect){
+  externFieldDirect = newFieldDirect;
+}
+
 
 // Utility Functions
 /*
@@ -110,6 +120,18 @@ void Lattice::initializeLattice(void) {
   std::cin >> localCoupling;
   float flocalCoupling = std::stof(localCoupling);
   setCoupling(flocalCoupling);
+
+  string localExternalFieldDirect;
+  std::cout << "Please enter the external field direction (1.0, 2.0, 3.0):" << endl;
+  std::cin >> localExternalFieldDirect;
+  float flocalExternalFieldDirect = std::stof(localExternalFieldDirect);
+  setExternFieldDirect(flocalExternalFieldDirect);
+
+  string localExternalField;
+  std::cout << "Please enter the external field:" << endl;
+  std::cin >> localExternalField;
+  float flocalExternalField = std::stof(localExternalField);
+  setExternField(flocalExternalField);
   
   string localSideLength;
   std::cout << "Please enter integer N spins for NxN lattice:" << endl;
@@ -150,7 +172,7 @@ float Lattice::calcTotalEnergy(void) {
   int jdex = 0;
   /*
 
-    H = -J * Sum( kron[si,sj] )
+    H = -J * Sum( kron[si,sj] ) - h * Sum( kron[hi,si] )
 
     There are four pairs of energies that need to be computed for each i,j pair.
     for a given i,j, there are 
@@ -209,6 +231,9 @@ float Lattice::calcTotalEnergy(void) {
 	if (matrix[i][j] == matrix[i][jdex]) 
 	  energySum = energySum - 1.0;
       }
+
+      if (matrix[i][j] == externFieldDirect)
+	energySum = energySum - externField;
       
     }
   }
@@ -299,7 +324,7 @@ float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
   /*
     Here we will only consider neighbors of the flipped spin for the i,j pairs
 
-    H = -J * Sum( kron[si,sj] )
+    H = -J * Sum( kron[si,sj] ) - h * Sum( kron[hi, si] )
 
     There are four pairs of energies that need to be computed for each i,j pair.
     for a given i,j, there are 
@@ -352,6 +377,13 @@ float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
       randSpinE = randSpinE - 1.0;
   }
 
+
+  
+  if (matrix[idex][jdex] == externFieldDirect)
+    randSpinE = randSpinE - externField;
+  
+  
+  
   randSpinE = randSpinE * 2.0 * coupling;
   //std::cout << "randSpinE = " << randSpinE << endl;
   return randSpinE;
