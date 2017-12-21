@@ -40,7 +40,7 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   float deltaS = 0.0;
 
   myLattice.calcMagnetization(oldMagnetization);
-  
+   outputFile << "0\t" + std::to_string(oldEnergy) + "\n";
   std::cout << "Energy of lattice at the beginning = " << oldEnergy << endl;
   std::cout << "Magnetization of lattice at the beginning = "
 	    << oldMagnetization[0] << "," << oldMagnetization[1] << ","
@@ -66,17 +66,10 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	preFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
 	savedState = myLattice.flipSpin(idex,jdex);
 	postFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
-
-	deltaE = postFlipEnergy - preFlipEnergy;
-	std::cout << "deltaE = " << deltaE << endl;
-	newEnergy = oldEnergy + deltaE;
-	//std::cout << "newEnergy = " << newEnergy << endl;
-
-	//Testing
-	//newEnergy = myLattice.calcTotalEnergy();
-	std::cout << "newEnergy = " << newEnergy << endl; 
-
 	
+	deltaE = postFlipEnergy - preFlipEnergy;
+	newEnergy = oldEnergy + deltaE;
+
 	  
 	if (newEnergy > oldEnergy){
 	  double randNum = (double)rand()/(double)RAND_MAX;
@@ -99,20 +92,11 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	  oldEnergy = newEnergy;
 
 	}
-
-
-	//if (iCycle % (nCycles/1000) == 0) {
-	  //myLattice.printLattice();
-	  //std::cout << "energy of lattice = " << oldEnergy << endl;
-	  //std::cout << "magnetization of lattice = " << oldMagnetization << endl;
-	  //float percent = float(iCycle) / float(nCycles);
-	  //std::cout << "%complete = " << percent * 100.0  << endl;
-	//}
 	
       } // idex loop
     } // jdex loop
 
-    outputFile << std::to_string(iCycle) + "\t" + std::to_string(oldEnergy) + "\n";
+    outputFile << std::to_string(iCycle+1) + "\t" + std::to_string(oldEnergy) + "\n";
   }// iCycle loop
   myLattice.calcMagnetization(oldMagnetization);
   std::cout << "Magnetization of lattice at the beginning = "

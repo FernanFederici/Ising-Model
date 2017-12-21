@@ -212,7 +212,7 @@ float Lattice::calcTotalEnergy(void) {
       
     }
   }
-  energySum = energySum * (coupling / 2.0);
+  energySum = energySum * coupling;
   return energySum;
 }
 
@@ -353,7 +353,7 @@ float Lattice::calcDifferenceInEnergy(int idex, int jdex) {
   }
 
   randSpinE = randSpinE * 2.0 * coupling;
-  std::cout << "randSpinE = " << randSpinE << endl;
+  //std::cout << "randSpinE = " << randSpinE << endl;
   return randSpinE;
 }
 
