@@ -20,9 +20,9 @@ void readFile(string fileName) {
 
 void MonteCarloSim(Lattice myLattice,int nCycles) {
 
-  ofstream outputFile;
-  outputFile.open("potts.out");
-  outputFile << "#iCycle \t Energy \n";
+  ofstream energyFile;
+  energyFile.open("potts.out");
+  energyFile << "#iCycle \t Energy \t Magnetization[0] \t Magnetization[1] \t Magnetization[2] \n";
   
   int nSpins = pow(myLattice.getSideLength(),2);
   int sampleTime = 1;
@@ -34,17 +34,25 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   float newMagnetization = 0.0;
   float preFlipEnergy = 0.0;
   float postFlipEnergy = 0.0;
-  float savedState = 0.0;
-
+  int spinPreFlip = 0;
+  int spinPostFlip = 0;
+  
   float deltaE = 0.0;
   float deltaS = 0.0;
 
+  // oldMagnetization contains the net # of spins aligned with each direction
   myLattice.calcMagnetization(oldMagnetization);
-   outputFile << "0\t" + std::to_string(oldEnergy) + "\n";
+  
+  energyFile << "0\t" + std::to_string(oldEnergy) + "\t" + 
+    std::to_string(oldMagnetization[0]/nSpins) + "\t" +
+    std::to_string(oldMagnetization[1]/nSpins) + "\t" +
+    std::to_string(oldMagnetization[2]/nSpins) + "\n";
+  
   std::cout << "Energy of lattice at the beginning = " << oldEnergy << endl;
   std::cout << "Magnetization of lattice at the beginning = "
-	    << oldMagnetization[0] << "," << oldMagnetization[1] << ","
-	    << oldMagnetization[2] << endl;
+	    << oldMagnetization[0]/nSpins << ","
+	    << oldMagnetization[1]/nSpins << ","
+	    << oldMagnetization[2]/nSpins << endl;
   
   myLattice.printLattice();
   
@@ -64,8 +72,12 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	*/
 	
 	preFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
-	savedState = myLattice.flipSpin(idex,jdex);
+	spinPreFlip = myLattice.getSpin(idex,jdex);
+	
+	myLattice.flipSpin(idex,jdex);
+	
 	postFlipEnergy = myLattice.calcDifferenceInEnergy(idex,jdex);
+	spinPostFlip = myLattice.getSpin(idex,jdex);
 	
 	deltaE = postFlipEnergy - preFlipEnergy;
 	newEnergy = oldEnergy + deltaE;
@@ -77,12 +89,14 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	  if (randNum <= exp(-1.0/myLattice.getTemperature())*(newEnergy - oldEnergy)) {
 	    acceptedMoves = acceptedMoves + 1;
 	    oldEnergy = newEnergy;
+	    oldMagnetization[spinPreFlip - 1] -= 1;
+	    oldMagnetization[spinPostFlip - 1] += 1;
 
 	  }
 	  // new energy is too large when compared to a thermal distribution
 	  // flip spin again to go back to old configuration.
 	  else {
-	    myLattice.revertSpin(idex,jdex, savedState);
+	    myLattice.revertSpin(idex,jdex, spinPreFlip);
 	  }
 	}
 	
@@ -90,14 +104,23 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
 	else {
 	  acceptedMoves = acceptedMoves + 1;
 	  oldEnergy = newEnergy;
+	  oldMagnetization[spinPreFlip - 1] -= 1;
+	  oldMagnetization[spinPostFlip - 1] += 1;	    
 
 	}
 	
       } // idex loop
     } // jdex loop
 
-    outputFile << std::to_string(iCycle+1) + "\t" + std::to_string(oldEnergy) + "\n";
+    energyFile << std::to_string(iCycle+1) + "\t" +
+      std::to_string(oldEnergy) + "\t" + 
+      std::to_string(oldMagnetization[0]/nSpins) + "\t" + 
+      std::to_string(oldMagnetization[1]/nSpins) + "\t" + 
+      std::to_string(oldMagnetization[2]/nSpins) + "\n";
+
+
   }// iCycle loop
+  
   myLattice.calcMagnetization(oldMagnetization);
   std::cout << "Magnetization of lattice at the end = "
 	    << oldMagnetization[0] << "," << oldMagnetization[1] << ","
@@ -107,7 +130,6 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   myLattice.printLattice();
 
   std::cout << "Energy at end = " << oldEnergy << endl;
-
   std::cout << "attemptedMoves = " << attemptedMoves << endl;
   std::cout << "acceptedMoves = " << acceptedMoves << endl;
 }

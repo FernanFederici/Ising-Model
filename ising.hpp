@@ -14,7 +14,7 @@ public:
   float externField;
   float externFieldDirect;
   
-  vector< vector<float> > matrix;
+  vector< vector<int> > matrix;
   vector<float> aveSpin;
   vector<float> latticeEnergy;
   vector<float> spinPairCorr;
@@ -34,6 +34,8 @@ public:
 
   int getExternFieldDirect(void);
   void setExternFieldDirect(float newFieldDirect);
+
+  int getSpin(int idex, int jdex);
   
   // Utility functions of the lattice.
   void initializeLattice(void);
@@ -41,7 +43,7 @@ public:
   float calcTotalEnergy(void);
   void calcMagnetization(float magnetization[3]);
   int getRandomCoord(void);
-  float flipSpin(int idex, int jdex);
+  void flipSpin(int idex, int jdex);
   void revertSpin(int idex, int jdex, float savedState);
   float calcDifferenceInEnergy(int idex, int jdex);
   float calcDifferenceInMagnetization(int idex, int jdex);
@@ -101,6 +103,10 @@ void Lattice::setExternFieldDirect(float newFieldDirect){
   externFieldDirect = newFieldDirect;
 }
 
+int Lattice::getSpin(int idex, int jdex){
+  return matrix[idex][jdex];
+}
+
 
 // Utility Functions
 /*
@@ -141,9 +147,9 @@ void Lattice::initializeLattice(void) {
 
   // Next we will initialize the matrix (lattice) to all spin up
   for (int i = 0; i < ilocalSideLength; i++) {
-    vector<float> row;
+    vector<int> row;
     for (int j = 0; j < ilocalSideLength; j++) {
-      row.push_back(1.0);
+      row.push_back(1);
     }
     matrix.push_back(row);
   }
@@ -259,10 +265,6 @@ void Lattice::calcMagnetization(float magnetization[3]) {
     }
   }
   
-  netA = netA / pow(sideLength, 2.0);
-  netB = netB / pow(sideLength, 2.0);
-  netC = netC / pow(sideLength, 2.0);
-
   magnetization[0] = netA;
   magnetization[1] = netB;
   magnetization[2] = netC;
@@ -274,43 +276,41 @@ int Lattice::getRandomCoord(void) {
   return (val*sideLength);
 }
 
-float Lattice::flipSpin(int idex, int jdex) {
+void Lattice::flipSpin(int idex, int jdex) {
   double val = (double)rand()/(double)RAND_MAX;
-  float savedState = matrix[idex][jdex];
   
   if (matrix[idex][jdex] == 1.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 2.0;
-      return savedState;
+      return;
     }
     else {
       matrix[idex][jdex] = 3.0;
-      return savedState;
+      return;
     }
   }
     
   if (matrix[idex][jdex] == 2.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 3.0;
-      return savedState;
+      return;
     }
     else {
       matrix[idex][jdex] = 1.0;
-      return savedState;
+      return;
     }
   }
 
   if (matrix[idex][jdex] == 3.0) {
     if (val < 0.5) {
       matrix[idex][jdex] = 1.0;
-      return savedState;
+      return;
     }
     else {
       matrix[idex][jdex] = 2.0;
-      return savedState;
+      return;
     }
   }
-  return savedState;
 }
 
 void Lattice::revertSpin(int idex, int jdex, float savedState) {
