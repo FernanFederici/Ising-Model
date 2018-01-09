@@ -1,3 +1,4 @@
+## Ising Model in Python
 This repository contains a python script which performs monte carlo simulations of a 2-dimensional ising model (assumed square lattice). The lattice energy, spin pair correlation, and the average spin of the lattice. As the simulation progresses, the user will be prompted with the efficiency of the monte carlo moves.
  
  This script allows the user to specify the side length of the lattice, the temperature of the lattice, the coupling constant between the spins, and the number of monte carlo moves to be implemented. Currently these values need to be set in the script, but it could be easily updated to be passed at the command line using argparse functionality. Something to do at another time!
