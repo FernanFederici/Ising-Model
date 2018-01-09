@@ -17,7 +17,6 @@ void readFile(string fileName) {
 }
 
 
-
 void MonteCarloSim(Lattice myLattice,int nCycles) {
 
   ofstream energyFile;
@@ -132,6 +131,19 @@ void MonteCarloSim(Lattice myLattice,int nCycles) {
   std::cout << "Energy at end = " << oldEnergy << endl;
   std::cout << "attemptedMoves = " << attemptedMoves << endl;
   std::cout << "acceptedMoves = " << acceptedMoves << endl;
+
+
+   ofstream latticeOutFile;
+   latticeOutFile.open("latticeConfig.out");
+   latticeOutFile << "#Configuration of the lattice after simulation \n";
+   for (int idex = 0; idex < myLattice.getSideLength(); idex++){
+     latticeOutFile <<  "   ";
+     for (int jdex = 0; jdex < myLattice.getSideLength(); jdex++){	
+       latticeOutFile << std::to_string(myLattice.getSpin(idex,jdex)) + "  ";
+     }
+     latticeOutFile << "\n";
+   }
+  
 }
 
 
