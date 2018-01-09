@@ -7,9 +7,12 @@ This repository also contains a three-state Potts Model implemented with C++, wh
 
 You will need a C++ compiler in order to turn potts.cpp and potts.hpp into an executable, most commonly available on Macs is the g++ compiler.
 
+```
 g++ potts.cpp -o pottsExecutable
-
+```
+```
 ./pottsExecutable
+```
 
 When you run the simulation you will be promted to input parameters for the simulation from the command line. These include, the temperature, coupling constants, external field diretion and magnitude, as well as the number of spins on the side of the lattice (assuming a square lattice), and the number of Monte Carlo sweeps of the lattice to perform.
 
